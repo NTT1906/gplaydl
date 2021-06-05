@@ -1,20 +1,20 @@
 from setuptools import setup
 
-setup(name='gplaydl',
+setup(name='gplaydi',
 	version='1.3.5',
 	description='Google Play APK downloader command line utility that utilizes gpapi to download APK files of free apps and games.',
 	author="Rehmat Alam",
 	author_email="contact@rehmat.works",
-	url="https://github.com/rehmatworks/gplaydl",
+	url="https://github.com/rehmatworks/gplaydi",
 	python_requires='>3.2.0',
 	license="MIT",
 	entry_points={
 		'console_scripts': [
-			'gplaydl = gplaydl.gplaydl:main'
+			'gplaydi = gplaydi.gplaydi:main'
 		],
 	},
 	packages=[
-		'gplaydl'
+		'gplaydi'
 	],
 	install_requires=[
 		'certifi==2020.4.5.1',

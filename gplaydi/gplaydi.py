@@ -13,7 +13,7 @@ from getpass import getpass
 devicecode = 'shamu'
 
 ap = argparse.ArgumentParser(
-    description='Command line APK downloader for Google Play Store.')
+    description='Command line APK deliveryer for Google Play Store.')
 subparsers = ap.add_subparsers(dest='action')
 
 # Args for configuring Google auth
@@ -21,26 +21,26 @@ cp = subparsers.add_parser('configure', help='Configure Google login info.')
 cp.add_argument('--device', dest='device',
                 help='Device code name', default=devicecode)
 
-# Args for downloading an app
+# Args for deliverying an app
 dl = subparsers.add_parser(
-    'download', help='Download an app or a game from Google Play.')
+    'delivery', help='delivery an app or a game from Google Play.')
 dl.add_argument('--device', dest='device',
                 help='Device code name', default=devicecode)
 dl.add_argument('--packageId', required=True, dest='packageId',
                 help='Package ID of the app, i.e. com.whatsapp')
 dl.add_argument('--path', dest='storagepath',
-                help='Path where to store downloaded files', default=False)
+                help='Path where to store deliveryed files', default=False)
 dl.add_argument('--ex', dest='expansionfiles',
-                help='Download expansion (OBB) data if available', default='y')
+                help='delivery expansion (OBB) data if available', default='y')
 dl.add_argument('--splits', dest='splits',
-                help='Download split APKs if available', default='y')
+                help='delivery split APKs if available', default='y')
 
 args = ap.parse_args()
 
-if (args.action == 'download' or args.action == 'configure') and args.device:
+if (args.action == 'delivery' or args.action == 'configure') and args.device:
     devicecode = args.device
 
-HOMEDIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), '.gplaydl')
+HOMEDIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), '.gplaydi')
 CACHEDIR = os.path.join(HOMEDIR, 'cache')
 CACHEFILE = os.path.join(CACHEDIR, '%s.txt' % devicecode)
 CONFIGDIR = os.path.join(HOMEDIR, 'config')
@@ -80,13 +80,13 @@ def configureauth():
         config = {'email': email, 'password': password}
         pickle.dump(config, open(CONFIGFILE, 'wb'))
         print(colored(
-            'Configuration file created successfully! Try downloading an app now.', 'green'))
+            'Configuration file created successfully! Try deliverying an app now.', 'green'))
     except Exception as e:
         print(colored(str(e), 'yellow'))
         configureauth()
 
 
-def downloadapp(packageId):
+def deliveryapp(packageId):
     if args.storagepath:
         storagepath = args.storagepath
     else:
@@ -110,36 +110,36 @@ def downloadapp(packageId):
         configureauth()
 
     try:
-        print(colored('Attempting to download %s' % packageId, 'blue'))
+        print(colored('Attempting to delivery %s' % packageId, 'blue'))
         expansionFiles = True if args.expansionfiles == 'y' else False
-        download = server.download(packageId, expansion_files=expansionFiles)
-        apkfname = '%s.apk' % download.get('docId')
+        delivery = server.delivery(packageId, expansion_files=expansionFiles)
+        apkfname = '%s.apk' % delivery.get('docId')
         apkpath = os.path.join(storagepath, apkfname)
 
         if not os.path.isdir(storagepath):
             os.makedirs(storagepath, exist_ok=True)
         saved = 0
-        totalsize = int(download.get('file').get('total_size'))
-        print(colored('Downloading %s.....' % apkfname, 'blue'))
+        totalsize = int(delivery.get('file').get('total_size'))
+        print(colored('deliverying %s.....' % apkfname, 'blue'))
         with open(apkpath, 'wb') as apkf:
-            for chunk in download.get('file').get('data'):
+            for chunk in delivery.get('file').get('data'):
                 saved += len(chunk)
                 apkf.write(chunk)
                 done = int(50 * saved / totalsize)
                 sys.stdout.write('\r[%s%s] %s%s (%s/%s)' % ('*' * done, ' ' * (50-done), int(
                     (saved/totalsize)*100), '%', sizeof_fmt(saved), sizeof_fmt(totalsize)))
         print('')
-        print(colored('APK downloaded and stored at %s' % apkpath, 'green'))
+        print(colored('APK deliveryed and stored at %s' % apkpath, 'green'))
 
         if args.splits == 'y':
-            for split in download.get('splits'):
+            for split in delivery.get('splits'):
                 name = '%s.apk' % (split.get('name'))
-                print(colored('Downloading %s.....' % name, 'blue'))
+                print(colored('deliverying %s.....' % name, 'blue'))
                 splitpath = os.path.join(
-                    storagepath, download.get('docId'), name)
-                if not os.path.isdir(os.path.join(storagepath, download.get('docId'))):
+                    storagepath, delivery.get('docId'), name)
+                if not os.path.isdir(os.path.join(storagepath, delivery.get('docId'))):
                     os.makedirs(os.path.join(
-                        storagepath, download.get('docId')), exist_ok=True)
+                        storagepath, delivery.get('docId')), exist_ok=True)
 
                 saved = 0
                 totalsize = int(split.get('file').get('total_size'))
@@ -151,17 +151,17 @@ def downloadapp(packageId):
                         sys.stdout.write('\r[%s%s] %s%s (%s/%s)' % ('*' * done, ' ' * (50-done), int(
                             (saved/totalsize)*100), '%', sizeof_fmt(saved), sizeof_fmt(totalsize)))
                 print('')
-                print(colored('Split APK downloaded and stored at %s' %
+                print(colored('Split APK deliveryed and stored at %s' %
                               splitpath, 'green'))
 
-        for obb in download.get('additionalData'):
+        for obb in delivery.get('additionalData'):
             name = '%s.%s.%s.obb' % (obb.get('type'), str(
-                obb.get('versionCode')), download.get('docId'))
-            print(colored('Downloading %s.....' % name, 'blue'))
-            obbpath = os.path.join(storagepath, download.get('docId'), name)
-            if not os.path.isdir(os.path.join(storagepath, download.get('docId'))):
+                obb.get('versionCode')), delivery.get('docId'))
+            print(colored('deliverying %s.....' % name, 'blue'))
+            obbpath = os.path.join(storagepath, delivery.get('docId'), name)
+            if not os.path.isdir(os.path.join(storagepath, delivery.get('docId'))):
                 os.makedirs(os.path.join(
-                    storagepath, download.get('docId')), exist_ok=True)
+                    storagepath, delivery.get('docId')), exist_ok=True)
 
             saved = 0
             totalsize = int(obb.get('file').get('total_size'))
@@ -173,10 +173,10 @@ def downloadapp(packageId):
                     sys.stdout.write('\r[%s%s] %s%s (%s/%s)' % ('*' * done, ' ' * (50-done), int(
                         (saved/totalsize)*100), '%', sizeof_fmt(saved), sizeof_fmt(totalsize)))
             print('')
-            print(colored('OBB file downloaded and stored at %s' % obbpath, 'green'))
+            print(colored('OBB file deliveryed and stored at %s' % obbpath, 'green'))
     except Exception as e:
         print(colored(
-            'Download failed: %s' % str(e), 'red'))
+            'delivery failed: %s' % str(e), 'red'))
 
 
 def write_cache(gsfId, token):
@@ -217,18 +217,18 @@ def do_login(server, email, password):
 
 def main():
     if sys.version_info < (3, 2):
-        print(colored('Only Python 3.2.x & up is supported. Please uninstall gplaydl and re-install under Python 3.2.x or up.', 'yellow'))
+        print(colored('Only Python 3.2.x & up is supported. Please uninstall gplaydi and re-install under Python 3.2.x or up.', 'yellow'))
         sys.exit(1)
 
     if args.action == 'configure':
         configureauth()
         sys.exit(0)
 
-    if args.action == 'download':
+    if args.action == 'delivery':
         if args.packageId:
-            downloadapp(packageId=args.packageId)
+            deliveryapp(packageId=args.packageId)
         sys.exit(0)
 
 
-if args.action not in ['download', 'configure']:
+if args.action not in ['delivery', 'configure']:
     ap.print_help()
